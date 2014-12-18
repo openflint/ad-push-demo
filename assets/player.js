@@ -343,7 +343,7 @@ sampleplayer.FlingPlayer = function (element) {
     this.mediaElement_.addEventListener('loadedmetadata', this.onLoadedMetadata_.bind(this), false);
 
     //todo 
-    var receiverWrapper = new ReceiverManagerWrapper("~flintplayer");
+    var receiverWrapper = new ReceiverManagerWrapper("~adpush");
     var player = new MediaPlayer(receiverWrapper, this.mediaElement_);
     
     //for ad
