@@ -1,28 +1,36 @@
 package com.infthink.flint.samples.adpush;
 
+import java.io.InputStream;
 import java.util.concurrent.TimeUnit;
 
+import com.infthink.flint.samples.adpush.AdpushChannel.AdData;
 import com.infthink.flint.samples.adpush.R;
 
 import tv.matchstick.flint.Flint;
 import tv.matchstick.flint.MediaStatus;
 import tv.matchstick.flint.RemoteMediaPlayer;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 
 public class VideoPlayerActivity extends ActionBarActivity implements
-        FlintStatusChangeListener {
+        FlintStatusChangeListener, AdpushChannel.AdChangeListener {
     private static final int AFTER_SEEK_DO_NOTHING = 0;
     private static final int AFTER_SEEK_PLAY = 1;
     private static final int AFTER_SEEK_PAUSE = 2;
@@ -35,8 +43,8 @@ public class VideoPlayerActivity extends ActionBarActivity implements
     private static final int REFRESH_INTERVAL_MS = (int) TimeUnit.SECONDS
             .toMillis(1);
 
-    private TextView mMediaTitle;
-    private TextView mMediaArtist;
+    private ImageView mAdImageView;
+
     private TextView mAppStatusTextView;
     private TextView mCurrentDeviceTextView;
     private TextView mStreamPositionTextView;
@@ -71,13 +79,15 @@ public class VideoPlayerActivity extends ActionBarActivity implements
 
     private FlintVideoManager mFlintVideoManager;
 
+    private AdData mCurrentAdData;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.fling_player_activity);
 
-        mMediaTitle = (TextView) findViewById(R.id.media_title);
-        mMediaArtist = (TextView) findViewById(R.id.media_artist);
+        mAdImageView = (ImageView) findViewById(R.id.media_art);
+
         mAppStatusTextView = (TextView) findViewById(R.id.app_status);
         mCurrentDeviceTextView = (TextView) findViewById(R.id.connected_device);
         mStreamPositionTextView = (TextView) findViewById(R.id.stream_position);
@@ -103,9 +113,10 @@ public class VideoPlayerActivity extends ActionBarActivity implements
 
         mHandler = new Handler();
 
-        String applicationId = "~samplemediaplayer";
+        String applicationId = "~adpush";
         Flint.FlintApi.setApplicationId(applicationId);
-        mFlintVideoManager = new FlintVideoManager(this, applicationId, this);
+        mFlintVideoManager = new FlintVideoManager(this, applicationId, this,
+                this);
 
         setUpControls();
 
@@ -125,13 +136,26 @@ public class VideoPlayerActivity extends ActionBarActivity implements
     }
 
     private void setUpControls() {
+        mAdImageView.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View arg0) {
+                if (mCurrentAdData != null) {
+                    Intent intent = new Intent();
+                    intent.setAction("android.intent.action.VIEW");
+                    Uri content_url = Uri.parse(mCurrentAdData.click_link);
+                    intent.setData(content_url);
+                    startActivity(intent);
+                }
+            }
+        });
+
         mStartMediaButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View arg0) {
                 mFlintVideoManager.loadMedia(mAutoplayCheckbox.isChecked());
             }
         });
-        
+
         mLaunchAppButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -247,8 +271,6 @@ public class VideoPlayerActivity extends ActionBarActivity implements
 
     private void setCurrentMediaMetadata(String title, String subtitle,
             Uri imageUrl) {
-        mMediaTitle.setText(title);
-        mMediaArtist.setText(subtitle);
     }
 
     private void setUpVolumeControls(final SeekBar volumeBar,
@@ -463,7 +485,8 @@ public class VideoPlayerActivity extends ActionBarActivity implements
     public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
         getMenuInflater().inflate(R.menu.main, menu);
-        mFlintVideoManager.addMediaRouterButton(menu, R.id.media_route_menu_item);
+        mFlintVideoManager.addMediaRouterButton(menu,
+                R.id.media_route_menu_item);
         return true;
     }
 
@@ -572,5 +595,39 @@ public class VideoPlayerActivity extends ActionBarActivity implements
     @Override
     public void onMediaVolumeEnd() {
         mIsUserAdjustingMuted = false;
+    }
+
+    @Override
+    public void onAdChange(AdData data) {
+        if ("ad_image".equals(data.type)) {
+            mCurrentAdData = data;
+            new DownloadImageTask(mAdImageView).execute(data.image_url);
+        }
+    }
+    
+
+    private class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
+        ImageView bmImage;
+
+        public DownloadImageTask(ImageView bmImage) {
+            this.bmImage = bmImage;
+        }
+
+        protected Bitmap doInBackground(String... urls) {
+            String urldisplay = urls[0];
+            Bitmap mIcon11 = null;
+            try {
+                InputStream in = new java.net.URL(urldisplay).openStream();
+                mIcon11 = BitmapFactory.decodeStream(in);
+            } catch (Exception e) {
+                Log.e("Error", e.getMessage());
+                e.printStackTrace();
+            }
+            return mIcon11;
+        }
+
+        protected void onPostExecute(Bitmap result) {
+            bmImage.setImageBitmap(result);
+        }
     }
 }

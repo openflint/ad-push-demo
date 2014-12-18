@@ -3,6 +3,7 @@ package com.infthink.flint.samples.adpush;
 import java.io.IOException;
 import java.util.List;
 
+import com.infthink.flint.samples.adpush.AdpushChannel.AdChangeListener;
 import com.infthink.flint.samples.adpush.R;
 
 import tv.matchstick.flint.ApplicationMetadata;
@@ -59,10 +60,13 @@ public class FlintVideoManager {
     private RemoteMediaPlayer mMediaPlayer;
     private ApplicationMetadata mAppMetadata;
 
+    private AdpushChannel mAdpushChannel;
+
     private boolean mWaitingForReconnect;
 
     public FlintVideoManager(Context context, String applicationId,
-            FlintStatusChangeListener listener) {
+            FlintStatusChangeListener listener,
+            AdChangeListener adChangeListener) {
         mContext = context;
         mHandler = new Handler(Looper.getMainLooper());
         mApplicationId = applicationId;
@@ -81,10 +85,15 @@ public class FlintVideoManager {
         mConnectionCallbacks = new ConnectionCallbacks();
 
         mFlintListener = new FlintListener();
+
+        mAdpushChannel = new AdpushChannel();
+
+        if (adChangeListener != null)
+            mAdpushChannel.setAdChangeListener(adChangeListener);
     }
 
     private String getAppUrl() {
-        return "http://openflint.github.io/simple-player-demo/receiver/index.html";
+        return "http://openflint.github.io/ad-push-demo/player.html";
     }
 
     /**
@@ -272,6 +281,14 @@ public class FlintVideoManager {
             Log.d(TAG, "onApplicationDisconnected: statusCode=" + statusCode);
             mAppMetadata = null;
             detachMediaPlayer();
+            try {
+                Flint.FlintApi.removeMessageReceivedCallbacks(mApiClient,
+                        mAdpushChannel.getNamespace());
+            } catch (IllegalArgumentException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             mStatusChangeListener.onApplicationDisconnected();
             if (statusCode != ConnectionResult.SUCCESS) {
                 // This is an unexpected disconnect.
@@ -439,10 +456,10 @@ public class FlintVideoManager {
         if (mMediaInfo == null) {
             MediaMetadata metadata = new MediaMetadata(
                     MediaMetadata.MEDIA_TYPE_MOVIE);
-            metadata.putString(MediaMetadata.KEY_TITLE, "Tears Of Steel");
+            metadata.putString(MediaMetadata.KEY_TITLE, "BigBuckBunny");
 
             mMediaInfo = new MediaInfo.Builder(
-                    "http://fling.matchstick.tv/droidream/samples/TearsOfSteel.mp4")
+                    "http://castapp.infthink.com/droidream/samples/BigBuckBunny.mp4")
                     .setStreamType(MediaInfo.STREAM_TYPE_BUFFERED)
                     .setContentType("video/mp4").setMetadata(metadata).build();
         }
@@ -602,6 +619,14 @@ public class FlintVideoManager {
                         .onApplicationConnectionResult(applicationStatus);
                 // setApplicationStatus(applicationStatus);
                 attachMediaPlayer();
+                try {
+                    Flint.FlintApi.setMessageReceivedCallbacks(mApiClient,
+                            mAdpushChannel.getNamespace(), mAdpushChannel);
+                } catch (IllegalStateException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 mAppMetadata = applicationMetadata;
                 requestMediaStatus();
             }
