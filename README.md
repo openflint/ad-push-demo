@@ -1,4 +1,4 @@
-ad-push-demo
+flint-player
 ============
 
-Demo How to Push AD from Receiver App to Sender App
+media player with ad push for OpenFlint
