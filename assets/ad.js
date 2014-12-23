@@ -4,7 +4,7 @@ var ADManager = function(){
     if(ADManager.instance!=undefined){
         return ADManager.instance;
     }
-    ADManager.unique = self;
+    ADManager.instance = self;
     // video ad list
     self.adList = null;
     self.adMap = null;
@@ -78,5 +78,5 @@ var ADManager = function(){
             }
         });
     };
-    return ADManager.unique;
+    return ADManager.instance;
 };
