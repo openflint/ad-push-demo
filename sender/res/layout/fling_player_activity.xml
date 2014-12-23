@@ -39,22 +39,27 @@
 
         <!-- Current media information -->
 
-        <LinearLayout
+        <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_horizontal"
             android:orientation="horizontal" >
 
             <ImageView
-                android:id="@+id/media_art"
+                android:id="@+id/media_img"
                 android:layout_width="match_parent"
                 android:layout_height="135dp"
                 android:background="@android:color/black"
                 android:contentDescription="@string/media_art_description"
                 android:padding="1dp"
                 android:scaleType="centerInside" />
+            <com.infthink.flint.samples.adpush.GifView
+                android:id="@+id/media_gif"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="1dp" />
 
-        </LinearLayout>
+        </FrameLayout>
 
         <View style="@style/Separator" />
 

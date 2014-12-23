@@ -12,6 +12,7 @@ import tv.matchstick.flint.RemoteMediaPlayer;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -25,6 +26,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
+import android.widget.ImageView.ScaleType;
 import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -67,6 +69,8 @@ public class VideoPlayerActivity extends ActionBarActivity implements
 
     private CheckBox mAutoplayCheckbox;
 
+    private GifView mGifView;
+
     private boolean mSeeking;
     private boolean mIsUserSeeking;
     private boolean mIsUserAdjustingVolume;
@@ -86,7 +90,9 @@ public class VideoPlayerActivity extends ActionBarActivity implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.fling_player_activity);
 
-        mAdImageView = (ImageView) findViewById(R.id.media_art);
+        mAdImageView = (ImageView) findViewById(R.id.media_img);
+        mAdImageView.setScaleType(ScaleType.FIT_CENTER);
+        mAdImageView.setVisibility(View.INVISIBLE);
 
         mAppStatusTextView = (TextView) findViewById(R.id.app_status);
         mCurrentDeviceTextView = (TextView) findViewById(R.id.connected_device);
@@ -102,6 +108,9 @@ public class VideoPlayerActivity extends ActionBarActivity implements
         mStopMediaButton = (Button) findViewById(R.id.stop);
 
         mAutoplayCheckbox = (CheckBox) findViewById(R.id.autoplay_checkbox);
+
+        mGifView = (GifView) findViewById(R.id.media_gif);
+        mGifView.setVisibility(View.INVISIBLE);
 
         mSeekBar = (SeekBar) findViewById(R.id.seek_bar);
         mSeekBehaviorSpinner = (Spinner) findViewById(R.id.seek_behavior_spinner);
@@ -600,11 +609,16 @@ public class VideoPlayerActivity extends ActionBarActivity implements
     @Override
     public void onAdChange(AdData data) {
         if ("ad_image".equals(data.type)) {
+            mAdImageView.setVisibility(View.VISIBLE);
+            mGifView.setVisibility(View.INVISIBLE);
             mCurrentAdData = data;
             new DownloadImageTask(mAdImageView).execute(data.image_url);
+        } else if ("ad_gif".equals(data.type)) {
+            mAdImageView.setVisibility(View.INVISIBLE);
+            mGifView.setVisibility(View.VISIBLE);
+            mGifView.setResource(data.image_url);
         }
     }
-    
 
     private class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
         ImageView bmImage;
