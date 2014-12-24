@@ -280,7 +280,7 @@ public class FlintVideoManager {
         public void onApplicationDisconnected(int statusCode) {
             Log.d(TAG, "onApplicationDisconnected: statusCode=" + statusCode);
             mAppMetadata = null;
-            detachMediaPlayer();
+            setSelectedDevice(null);
             try {
                 Flint.FlintApi.removeMessageReceivedCallbacks(mApiClient,
                         mAdpushChannel.getNamespace());
@@ -294,6 +294,9 @@ public class FlintVideoManager {
                 // This is an unexpected disconnect.
                 mStatusChangeListener.onApplicationStatusChanged(mContext
                         .getString(R.string.status_app_disconnected));
+            }
+            if (mMediaRouter != null) {
+                mMediaRouter.selectRoute(mMediaRouter.getDefaultRoute());
             }
         }
     }

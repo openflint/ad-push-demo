@@ -9,6 +9,7 @@ import com.infthink.flint.samples.adpush.R;
 import tv.matchstick.flint.Flint;
 import tv.matchstick.flint.MediaStatus;
 import tv.matchstick.flint.RemoteMediaPlayer;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -17,6 +18,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Vibrator;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -84,6 +86,9 @@ public class VideoPlayerActivity extends ActionBarActivity implements
     private FlintVideoManager mFlintVideoManager;
 
     private AdData mCurrentAdData;
+    
+    private Vibrator mVibrator;
+    private long[] mVibratorPattern = {100,400,100,400};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -142,6 +147,8 @@ public class VideoPlayerActivity extends ActionBarActivity implements
                 startRefreshTimer();
             }
         };
+        
+        mVibrator = (Vibrator)getSystemService(Context.VIBRATOR_SERVICE); 
     }
 
     private void setUpControls() {
@@ -488,6 +495,7 @@ public class VideoPlayerActivity extends ActionBarActivity implements
     protected void onDestroy() {
         super.onDestroy();
         mFlintVideoManager.destroy();
+        mVibrator.cancel();
     }
 
     @Override
@@ -608,6 +616,7 @@ public class VideoPlayerActivity extends ActionBarActivity implements
 
     @Override
     public void onAdChange(AdData data) {
+        mVibrator.vibrate(mVibratorPattern, -1);
         if ("ad_image".equals(data.type)) {
             mAdImageView.setVisibility(View.VISIBLE);
             mGifView.setVisibility(View.INVISIBLE);
