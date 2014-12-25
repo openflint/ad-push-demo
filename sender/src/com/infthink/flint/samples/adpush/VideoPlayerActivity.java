@@ -13,7 +13,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -25,19 +24,13 @@ import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
-import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.ImageView.ScaleType;
 import android.widget.SeekBar;
-import android.widget.Spinner;
 import android.widget.TextView;
 
 public class VideoPlayerActivity extends ActionBarActivity implements
         FlintStatusChangeListener, AdpushChannel.AdChangeListener {
-    private static final int AFTER_SEEK_DO_NOTHING = 0;
-    private static final int AFTER_SEEK_PLAY = 1;
-    private static final int AFTER_SEEK_PAUSE = 2;
 
     private static final int PLAYER_STATE_NONE = 0;
     private static final int PLAYER_STATE_PLAYING = 1;
@@ -49,34 +42,19 @@ public class VideoPlayerActivity extends ActionBarActivity implements
 
     private ImageView mAdImageView;
 
-    private TextView mAppStatusTextView;
     private TextView mCurrentDeviceTextView;
     private TextView mStreamPositionTextView;
     private TextView mStreamDurationTextView;
 
-    private Button mLaunchAppButton;
-    private Button mJoinAppButton;
-    private Button mLeaveAppButton;
-    private Button mStopAppButton;
-    private Button mStartMediaButton;
     private Button mPlayPauseButton;
     private Button mStopMediaButton;
 
     private SeekBar mSeekBar;
-    private Spinner mSeekBehaviorSpinner;
-    private SeekBar mDeviceVolumeBar;
-    private CheckBox mDeviceMuteCheckBox;
-    private SeekBar mStreamVolumeBar;
-    private CheckBox mStreamMuteCheckBox;
-
-    private CheckBox mAutoplayCheckbox;
 
     private GifView mGifView;
 
     private boolean mSeeking;
     private boolean mIsUserSeeking;
-    private boolean mIsUserAdjustingVolume;
-    private boolean mIsUserAdjustingMuted;
 
     private int mPlayerState;
 
@@ -99,31 +77,17 @@ public class VideoPlayerActivity extends ActionBarActivity implements
         mAdImageView.setScaleType(ScaleType.FIT_CENTER);
         mAdImageView.setVisibility(View.INVISIBLE);
 
-        mAppStatusTextView = (TextView) findViewById(R.id.app_status);
         mCurrentDeviceTextView = (TextView) findViewById(R.id.connected_device);
         mStreamPositionTextView = (TextView) findViewById(R.id.stream_position);
         mStreamDurationTextView = (TextView) findViewById(R.id.stream_duration);
 
-        mLaunchAppButton = (Button) findViewById(R.id.launch_app);
-        mJoinAppButton = (Button) findViewById(R.id.join_app);
-        mLeaveAppButton = (Button) findViewById(R.id.leave_app);
-        mStopAppButton = (Button) findViewById(R.id.stop_app);
-        mStartMediaButton = (Button) findViewById(R.id.select_media_button);
         mPlayPauseButton = (Button) findViewById(R.id.pause_play);
         mStopMediaButton = (Button) findViewById(R.id.stop);
-
-        mAutoplayCheckbox = (CheckBox) findViewById(R.id.autoplay_checkbox);
 
         mGifView = (GifView) findViewById(R.id.media_gif);
         mGifView.setVisibility(View.INVISIBLE);
 
         mSeekBar = (SeekBar) findViewById(R.id.seek_bar);
-        mSeekBehaviorSpinner = (Spinner) findViewById(R.id.seek_behavior_spinner);
-
-        mDeviceVolumeBar = (SeekBar) findViewById(R.id.device_volume_bar);
-        mDeviceMuteCheckBox = (CheckBox) findViewById(R.id.device_mute_checkbox);
-        mStreamVolumeBar = (SeekBar) findViewById(R.id.stream_volume_bar);
-        mStreamMuteCheckBox = (CheckBox) findViewById(R.id.stream_mute_checkbox);
 
         mHandler = new Handler();
 
@@ -142,7 +106,6 @@ public class VideoPlayerActivity extends ActionBarActivity implements
                             mFlintVideoManager.getMediaCurrentTime(),
                             mFlintVideoManager.getMediaDuration());
                 }
-                updateStreamVolume();
                 updateButtonStates();
                 startRefreshTimer();
             }
@@ -165,41 +128,6 @@ public class VideoPlayerActivity extends ActionBarActivity implements
             }
         });
 
-        mStartMediaButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View arg0) {
-                mFlintVideoManager.loadMedia(mAutoplayCheckbox.isChecked());
-            }
-        });
-
-        mLaunchAppButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mFlintVideoManager.launchApplication();
-            }
-        });
-
-        mJoinAppButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mFlintVideoManager.joinApplication();
-            }
-        });
-
-        mLeaveAppButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mFlintVideoManager.leaveApplication();
-            }
-        });
-
-        mStopAppButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mFlintVideoManager.stopApplication();
-            }
-        });
-
         mPlayPauseButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -214,7 +142,7 @@ public class VideoPlayerActivity extends ActionBarActivity implements
         mStopMediaButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                mFlintVideoManager.stopMedia();
+                mFlintVideoManager.stopApplication();
             }
         });
 
@@ -238,11 +166,7 @@ public class VideoPlayerActivity extends ActionBarActivity implements
             }
         });
 
-        setUpVolumeControls(mDeviceVolumeBar, mDeviceMuteCheckBox);
-        setUpVolumeControls(mStreamVolumeBar, mStreamMuteCheckBox);
-
         mIsUserSeeking = false;
-        mIsUserAdjustingVolume = false;
     }
 
     private void onSeekBarMoved(long position) {
@@ -251,20 +175,7 @@ public class VideoPlayerActivity extends ActionBarActivity implements
 
         refreshPlaybackPosition(position, -1);
 
-        int behavior = mSeekBehaviorSpinner.getSelectedItemPosition();
-
-        int resumeState;
-        switch (behavior) {
-        case AFTER_SEEK_PLAY:
-            resumeState = RemoteMediaPlayer.RESUME_STATE_PLAY;
-            break;
-        case AFTER_SEEK_PAUSE:
-            resumeState = RemoteMediaPlayer.RESUME_STATE_PAUSE;
-            break;
-        case AFTER_SEEK_DO_NOTHING:
-        default:
-            resumeState = RemoteMediaPlayer.RESUME_STATE_UNCHANGED;
-        }
+        int resumeState = RemoteMediaPlayer.RESUME_STATE_PLAY;
         mSeeking = true;
         mFlintVideoManager.seekMedia(position, resumeState);
     }
@@ -273,66 +184,11 @@ public class VideoPlayerActivity extends ActionBarActivity implements
         mCurrentDeviceTextView.setText(name);
     }
 
-    private void refreshDeviceVolume(double percent, boolean muted) {
-        if (!mIsUserAdjustingVolume) {
-            mDeviceVolumeBar
-                    .setProgress((int) (percent * FlintVideoManager.MAX_VOLUME_LEVEL));
-        }
-        mDeviceMuteCheckBox.setChecked(muted);
-    }
-
     private void setApplicationStatus(String statusText) {
-        mAppStatusTextView.setText(statusText);
     }
 
     private void setCurrentMediaMetadata(String title, String subtitle,
             Uri imageUrl) {
-    }
-
-    private void setUpVolumeControls(final SeekBar volumeBar,
-            final CheckBox muteCheckBox) {
-        volumeBar.setMax((int) FlintVideoManager.MAX_VOLUME_LEVEL);
-        volumeBar.setProgress(0);
-        volumeBar
-                .setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-                    @Override
-                    public void onStopTrackingTouch(SeekBar seekBar) {
-                        mIsUserAdjustingVolume = false;
-                        volumeBar.setSecondaryProgress(0);
-                        if (volumeBar == mDeviceVolumeBar) {
-                            mFlintVideoManager.setDeviceVolume(seekBar
-                                    .getProgress());
-                        } else {
-                            mFlintVideoManager.setMediaVolume(seekBar
-                                    .getProgress());
-                        }
-                    }
-
-                    @Override
-                    public void onStartTrackingTouch(SeekBar seekBar) {
-                        mIsUserAdjustingVolume = true;
-                        volumeBar.setSecondaryProgress(seekBar.getProgress());
-                    }
-
-                    @Override
-                    public void onProgressChanged(SeekBar seekBar,
-                            int progress, boolean fromUser) {
-                    }
-                });
-
-        muteCheckBox
-                .setOnCheckedChangeListener(new CheckBox.OnCheckedChangeListener() {
-                    @Override
-                    public void onCheckedChanged(CompoundButton view,
-                            boolean isChecked) {
-                        if (muteCheckBox == mDeviceMuteCheckBox) {
-                            mFlintVideoManager.setDeviceMute(isChecked);
-                        } else {
-                            mIsUserAdjustingMuted = true;
-                            mFlintVideoManager.setMediaMute(isChecked);
-                        }
-                    }
-                });
     }
 
     private void refreshPlaybackPosition(long position, long duration) {
@@ -358,25 +214,6 @@ public class VideoPlayerActivity extends ActionBarActivity implements
         }
     }
 
-    private void refreshStreamVolume(double percent, boolean muted) {
-        if (!mIsUserAdjustingVolume) {
-            mStreamVolumeBar
-                    .setProgress((int) (percent * FlintVideoManager.MAX_VOLUME_LEVEL));
-        }
-        if (!mIsUserAdjustingMuted) {
-            mStreamMuteCheckBox.setChecked(muted);
-        }
-    }
-
-    private void updateStreamVolume() {
-        MediaStatus mediaStatus = mFlintVideoManager.getMediaStatus();
-        if (mediaStatus != null) {
-            double streamVolume = mediaStatus.getStreamVolume();
-            boolean muteState = mediaStatus.isMute();
-            refreshStreamVolume(streamVolume, muteState);
-        }
-    }
-
     private String formatTime(long millisec) {
         int seconds = (int) (millisec / 1000);
         int hours = seconds / (60 * 60);
@@ -394,8 +231,6 @@ public class VideoPlayerActivity extends ActionBarActivity implements
     }
 
     private void updateButtonStates() {
-        boolean hasDeviceConnection = mFlintVideoManager.isDeviceConnectioned();
-        boolean hasAppConnection = mFlintVideoManager.isAppConnectioned();
         boolean hasMediaConnection = mFlintVideoManager.isMediaConnectioned();
         boolean hasMedia = false;
 
@@ -418,32 +253,12 @@ public class VideoPlayerActivity extends ActionBarActivity implements
         } else {
             setPlayerState(PLAYER_STATE_NONE);
         }
-
-        mLaunchAppButton.setEnabled(hasDeviceConnection && !hasAppConnection);
-        mJoinAppButton.setEnabled(hasDeviceConnection && !hasAppConnection);
-        mLeaveAppButton.setEnabled(hasDeviceConnection && hasAppConnection);
-        mStopAppButton.setEnabled(hasDeviceConnection && hasAppConnection);
-        mAutoplayCheckbox.setEnabled(hasDeviceConnection && hasAppConnection);
-
-        mStartMediaButton.setEnabled(hasMediaConnection);
         mStopMediaButton.setEnabled(hasMediaConnection && hasMedia);
         setSeekBarEnabled(hasMediaConnection && hasMedia);
-        setDeviceVolumeControlsEnabled(hasDeviceConnection);
-        setStreamVolumeControlsEnabled(hasMediaConnection && hasMedia);
     }
 
     private void setSeekBarEnabled(boolean enabled) {
         mSeekBar.setEnabled(enabled);
-    }
-
-    private void setDeviceVolumeControlsEnabled(boolean enabled) {
-        mDeviceVolumeBar.setEnabled(enabled);
-        mDeviceMuteCheckBox.setEnabled(enabled);
-    }
-
-    private void setStreamVolumeControlsEnabled(boolean enabled) {
-        mStreamVolumeBar.setEnabled(enabled);
-        mStreamMuteCheckBox.setEnabled(enabled);
     }
 
     private void setPlayerState(int playerState) {
@@ -524,7 +339,6 @@ public class VideoPlayerActivity extends ActionBarActivity implements
 
     @Override
     public void onVolumeChanged(double percent, boolean muted) {
-        refreshDeviceVolume(percent, muted);
     }
 
     @Override
@@ -547,9 +361,6 @@ public class VideoPlayerActivity extends ActionBarActivity implements
 
     @Override
     public void onConnected() {
-        setDeviceVolumeControlsEnabled(true);
-        mLaunchAppButton.setEnabled(true);
-        mJoinAppButton.setEnabled(true);
     }
 
     @Override
@@ -578,7 +389,6 @@ public class VideoPlayerActivity extends ActionBarActivity implements
 
         refreshPlaybackPosition(mFlintVideoManager.getMediaCurrentTime(),
                 mFlintVideoManager.getMediaDuration());
-        updateStreamVolume();
         updateButtonStates();
     }
 
@@ -611,7 +421,6 @@ public class VideoPlayerActivity extends ActionBarActivity implements
 
     @Override
     public void onMediaVolumeEnd() {
-        mIsUserAdjustingMuted = false;
     }
 
     @Override

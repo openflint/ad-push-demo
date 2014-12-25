@@ -61,8 +61,6 @@
 
         </FrameLayout>
 
-        <View style="@style/Separator" />
-
         <!-- App controls -->
 
         <LinearLayout
@@ -76,24 +74,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal" >
-
-                <Button
-                    android:id="@+id/launch_app"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="fill"
-                    android:layout_weight="1"
-                    android:enabled="false"
-                    android:text="@string/launch_app" />
-
-                <Button
-                    android:id="@+id/join_app"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="fill"
-                    android:layout_weight="1"
-                    android:enabled="false"
-                    android:text="@string/join_app" />
             </LinearLayout>
 
             <LinearLayout
@@ -101,35 +81,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal" >
-
-                <Button
-                    android:id="@+id/leave_app"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="fill"
-                    android:layout_weight="1"
-                    android:enabled="false"
-                    android:text="@string/leave_app" />
-
-                <Button
-                    android:id="@+id/stop_app"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="fill"
-                    android:layout_weight="1"
-                    android:enabled="false"
-                    android:text="@string/stop_app" />
             </LinearLayout>
         </LinearLayout>
-
-        <TextView
-            android:id="@+id/app_status"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="fill"
-            android:gravity="center"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:textIsSelectable="false" />
 
         <View
             android:id="@+id/app_controls_separator"
@@ -148,15 +101,6 @@
             android:orientation="horizontal" >
 
             <Button
-                android:id="@+id/select_media_button"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_gravity="fill"
-                android:layout_weight="1"
-                android:enabled="false"
-                android:text="@string/start" />
-
-            <Button
                 android:id="@+id/pause_play"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -173,42 +117,6 @@
                 android:layout_weight="1"
                 android:enabled="false"
                 android:text="@string/stop" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/seek_behavior_controls"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_marginLeft="5dp"
-            android:layout_marginRight="5dp"
-            android:gravity="center_horizontal" >
-
-            <CheckBox
-                android:id="@+id/autoplay_checkbox"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:checked="true"
-                android:enabled="false"
-                android:text="@string/autoplay"
-                android:textAppearance="?android:attr/textAppearanceSmall" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginLeft="15dp"
-                android:layout_marginRight="10dp"
-                android:text="@string/after_seek"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:textIsSelectable="false" />
-
-            <Spinner
-                android:id="@+id/seek_behavior_spinner"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:entries="@array/seek_behaviors" />
         </LinearLayout>
 
         <!-- seek bar and time indicators -->
@@ -250,93 +158,9 @@
             android:layout_marginLeft="5dp"
             android:layout_marginRight="5dp" />
 
-        <View
-            android:id="@+id/seek_controls_separator"
-            style="@style/Separator" />
-
         <!-- device volume controls -->
 
-        <LinearLayout
-            android:id="@+id/device_volume_controls"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="5dp"
-            android:layout_marginTop="15dp"
-            android:gravity="center_horizontal"
-            android:orientation="horizontal" >
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginLeft="15dp"
-                android:layout_marginRight="10dp"
-                android:layout_weight="0"
-                android:text="@string/device_volume"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:textIsSelectable="false" />
-
-            <SeekBar
-                android:id="@+id/device_volume_bar"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginLeft="0dp"
-                android:layout_marginRight="0dp"
-                android:layout_weight="1" />
-
-            <CheckBox
-                android:id="@+id/device_mute_checkbox"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginLeft="10dp"
-                android:layout_marginRight="15dp"
-                android:layout_weight="0"
-                android:text="@string/mute" />
-        </LinearLayout>
-
         <!-- stream volume controls -->
-
-        <LinearLayout
-            android:id="@+id/stream_volume_controls"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="5dp"
-            android:layout_marginTop="15dp"
-            android:gravity="center_horizontal"
-            android:orientation="horizontal" >
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginLeft="15dp"
-                android:layout_marginRight="10dp"
-                android:layout_weight="0"
-                android:text="@string/stream_volume"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:textIsSelectable="false" />
-
-            <SeekBar
-                android:id="@+id/stream_volume_bar"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginLeft="0dp"
-                android:layout_marginRight="0dp"
-                android:layout_weight="1" />
-
-            <CheckBox
-                android:id="@+id/stream_mute_checkbox"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginLeft="10dp"
-                android:layout_marginRight="15dp"
-                android:layout_weight="0"
-                android:text="@string/mute" />
-        </LinearLayout>
 
     </LinearLayout>
 

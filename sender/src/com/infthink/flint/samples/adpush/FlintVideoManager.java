@@ -245,12 +245,17 @@ public class FlintVideoManager {
                     mStatusChangeListener.onNoLongerRunning(true);
                 }
             }
+            launchApplication();
         }
 
         @Override
         public void onConnectionFailed(ConnectionResult result) {
             Log.d(TAG, "onConnectionFailed");
             mStatusChangeListener.onConnectionFailed();
+            setSelectedDevice(null);
+            if (mMediaRouter != null) {
+                mMediaRouter.selectRoute(mMediaRouter.getDefaultRoute());
+            }
         }
     }
 
@@ -632,6 +637,7 @@ public class FlintVideoManager {
                 }
                 mAppMetadata = applicationMetadata;
                 requestMediaStatus();
+                loadMedia(true);
             }
         }
     }
