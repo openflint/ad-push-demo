@@ -314,7 +314,7 @@ public class FlintVideoManager {
             return;
         }
 
-        Flint.FlintApi.launchApplication(mApiClient, getAppUrl(), true)
+        Flint.FlintApi.launchApplication(mApiClient, getAppUrl())
                 .setResultCallback(
                         new ApplicationConnectionResultCallback("LaunchApp"));
     }
@@ -464,10 +464,10 @@ public class FlintVideoManager {
         if (mMediaInfo == null) {
             MediaMetadata metadata = new MediaMetadata(
                     MediaMetadata.MEDIA_TYPE_MOVIE);
-            metadata.putString(MediaMetadata.KEY_TITLE, "BigBuckBunny");
+            metadata.putString(MediaMetadata.KEY_TITLE, "matchstick");
 
             mMediaInfo = new MediaInfo.Builder(
-                    "http://castapp.infthink.com/droidream/samples/BigBuckBunny.mp4")
+                    "http://castapp.infthink.com/droidream/samples/matchstick.mp4")
                     .setStreamType(MediaInfo.STREAM_TYPE_BUFFERED)
                     .setContentType("video/mp4").setMetadata(metadata).build();
         }
@@ -637,6 +637,7 @@ public class FlintVideoManager {
                 }
                 mAppMetadata = applicationMetadata;
                 requestMediaStatus();
+                
                 loadMedia(true);
             }
         }
