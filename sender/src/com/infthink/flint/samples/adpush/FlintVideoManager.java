@@ -32,6 +32,7 @@ import android.support.v7.app.MediaRouteActionProvider;
 import android.support.v7.media.MediaRouteSelector;
 import android.support.v7.media.MediaRouter;
 import android.support.v7.media.MediaRouter.RouteInfo;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -427,6 +428,8 @@ public class FlintVideoManager {
                             }
                             mStatusChangeListener.onMediaMetadataUpdated(title,
                                     artist, imageUrl);
+                        } else {
+                            loadMedia(true);
                         }
                     }
                 });
@@ -467,7 +470,7 @@ public class FlintVideoManager {
             metadata.putString(MediaMetadata.KEY_TITLE, "matchstick");
 
             mMediaInfo = new MediaInfo.Builder(
-                    "http://castapp.infthink.com/droidream/samples/matchstick.mp4")
+                    "http://fling.matchstick.tv/droidream/samples/matchstick.mp4")
                     .setStreamType(MediaInfo.STREAM_TYPE_BUFFERED)
                     .setContentType("video/mp4").setMetadata(metadata).build();
         }
@@ -477,10 +480,12 @@ public class FlintVideoManager {
             Log.e(TAG, "Trying to play a video with no active media session");
             return;
         }
-
-        mMediaPlayer.load(mApiClient, mMediaInfo, autoPlay).setResultCallback(
-                new MediaResultCallback(mContext
-                        .getString(R.string.mediaop_load)));
+        if (mMediaPlayer.getMediaInfo() == null || TextUtils.isEmpty(mMediaPlayer.getMediaInfo().getContentId())) {
+            mMediaPlayer.load(mApiClient, mMediaInfo, autoPlay)
+                    .setResultCallback(
+                            new MediaResultCallback(mContext
+                                    .getString(R.string.mediaop_load)));
+        }
     }
 
     public void playMedia() {
@@ -637,8 +642,7 @@ public class FlintVideoManager {
                 }
                 mAppMetadata = applicationMetadata;
                 requestMediaStatus();
-                
-                loadMedia(true);
+
             }
         }
     }
