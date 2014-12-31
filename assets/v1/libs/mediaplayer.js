@@ -32,13 +32,17 @@ var MediaPlayer = function (manager, videoId) {
 
     self.receiverManager = manager;
     var messageBus = self.receiverManager.createMessageBus("urn:flint:org.openflint.fling.media");
-    self.messageBus = messageBus;
+    
     var video = (typeof(videoId) == "string") ? document.getElementById(videoId) : videoId;
+    if (video == null) {
+        throw Error("video element undefined!");
+    }
     //for ad 
     self.video = video;
     if (video == null) {
         throw Error("video element undefined!");
     }
+
     video.style.visibility = "visible";
     function syncExecute(readyCallback) {
         if (self.status == "READY") {
@@ -160,7 +164,7 @@ var MediaPlayer = function (manager, videoId) {
 
     //create MessageReport Object.
     var messageReport = new MessageReport();
-    self.messageReport = messageReport;
+
     self.load = function (url, videoType, title, subtitle, mediaMetadata) {
         self.mediaMetadata = mediaMetadata;
 
@@ -174,10 +178,9 @@ var MediaPlayer = function (manager, videoId) {
         // video.appendChild(source);
         video.src = url;
         video.load();
-        //for ad
-        self.videoURL = url;
 
         //for ad
+        self.videoURL = url;
         if (typeof(title) != "undefined" && !title) {
             self.title = title;
         }
@@ -211,7 +214,7 @@ var MediaPlayer = function (manager, videoId) {
     };
 
     self.volumechange = function (num) {
-        console.log("==========================self.volumechange===[" + num + "]=======================");
+        console.info("==========================self.volumechange===[" + num + "]=======================");
         syncExecute(function () {
             video.volume = num;
         });
@@ -220,31 +223,22 @@ var MediaPlayer = function (manager, videoId) {
             messageReport.syncPlayerState("volumechange");
         }
     };
-    self.mute = function(muted){
-        console.log("==========================self.mute===[" + muted + "]=======================");
-        syncExecute(function () {
-            video.muted = muted;
-        });
-        ("onmute" in self) && self.onmute(muted);
-        messageReport.syncPlayerState("volumechange");
-    };
 
     var _senderId = "*:*";
-    self._senderId = _senderId;
 
     messageBus.on("senderConnected", function (senderId) {
         console.log("@#@#@#@#", "MediaPlayer received sender connected: ", senderId);
     });
 
     messageBus.on("senderDisconnected", function (senderId) {
-        console.log("@#@#@#@#", "MediaPlayer received sender connected: ", senderId);
+        console.log("@#@#@#@#", "MediaPlayer received sender disconnected: ", senderId);
     });
 
     /*
      * sender message listener.
      **/
-    messageBus.on("message", function (senderId, message) {
-        console.info("====================================================>messageBus received: ", senderId, message);
+    messageBus.on("message", function (message, senderId) {
+        console.info("messageBus received: ", senderId, message);
         var messageData = JSON.parse(message);
         self.requestId = messageData.requestId;
         if ("type" in messageData) {
@@ -266,12 +260,7 @@ var MediaPlayer = function (manager, videoId) {
 
                 case "SET_VOLUME":
                     (self.requestId) && (self.requestIdSetVolume = self.requestId);
-
-                    if(typeof(messageData.volume.level)!="undefined"){
-                        self.volumechange(messageData.volume.level);
-                    }else if(typeof(messageData.volume.muted)!="undefined"){
-                        self.mute(messageData.volume.muted);
-                    }
+                    self.volumechange(messageData.volume.level);
                     break;
 
                 case "SEEK":
@@ -313,11 +302,11 @@ var MediaPlayer = function (manager, videoId) {
         messageReport.paused();
     });
     video.addEventListener("ended", function (e) {
-        self.status = "IDLE";
         messageReport.idle("FINISHED");
     });
     video.addEventListener("volumechange", function (e) {
         self.videoVolume = video.volume;
+        console.info("----------------------------------volumechange------------------------------");
         messageReport.syncPlayerState("volumechange");
     });
     video.addEventListener("seeked", function (e) {

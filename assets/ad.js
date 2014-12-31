@@ -62,7 +62,7 @@ var ADManager = function(){
         });
         player.video.addEventListener("timeupdate", function (e) {
             var sec = Math.floor(player.video.currentTime);
-            if(typeof(self.adMap[sec])!="undefined"&& self.currAdTime!=sec){
+            if(self.adMap!=null&&typeof(self.adMap[sec])!="undefined"&& self.currAdTime!=sec){
                 self.currAdTime = sec;
                 
                 console.info(self.adMap[sec]);
