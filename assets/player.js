@@ -337,18 +337,30 @@ sampleplayer.FlingPlayer = function (element) {
         false);
     this.mediaElement_.addEventListener('seeked', this.onSeekEnd_.bind(this),
         false);
+    this.mediaElement_.addEventListener('play', this.onPlay_.bind(this), false);
 
     this.mediaElement_.addEventListener('volumechange', this.onVolumeChange_.bind(this), false);
 
     this.mediaElement_.addEventListener('loadedmetadata', this.onLoadedMetadata_.bind(this), false);
 
-    //todo 
-    var receiverWrapper = new ReceiverManagerWrapper("~adpush");
-    var player = new MediaPlayer(receiverWrapper, this.mediaElement_);
+    this.mediaElement_.addEventListener('loadeddata', this.onLoadedData_.bind(this), false);
+    
+    // //todo 
+    // var receiverWrapper = new ReceiverManagerWrapper("~adpush");
+    // var player = new MediaPlayer(receiverWrapper, this.mediaElement_);
+    
+    // //for ad
+    // var adManager = new ADManager();
+    // adManager.load(player);
+
+    // create FlintReceiverManager
+    var receiverManager = new FlintReceiverManager("~adpush");
+    var player = new MediaPlayer(receiverManager, this.mediaElement_);
     
     //for ad
     var adManager = new ADManager();
     adManager.load(player);
+
 
     //volume change event
     player.on("volumechange", function(num){
@@ -373,7 +385,7 @@ sampleplayer.FlingPlayer = function (element) {
         }, 3000);
     });
     //video finish event todo
-    receiverWrapper.open();
+    receiverManager.open();
 };
 
 sampleplayer.FlingPlayer.prototype.onLoadedMetadata_ = function () {
@@ -382,13 +394,24 @@ sampleplayer.FlingPlayer.prototype.onLoadedMetadata_ = function () {
     // elementControl.player.hideLogo();
     self.setState_(sampleplayer.State.LOADING);
     self.loading_time_out_ = setTimeout(function(){
+        console.log('onLoadedMetadata_ set state to buffering');
         self.setState_(sampleplayer.State.BUFFERING);
         clearTimeout(self.loading_time_out_);
         self.loading_time_out_ = undefined;
     },10000);
 
-}
+};
 
+sampleplayer.FlingPlayer.prototype.onPlay_ = function () {
+    console.log('onPlay');
+    this.loading_time_out_ && clearTimeout(this.loading_time_out_);
+    console.log('onplay clear time out');
+    this.setState_(sampleplayer.State.PLAYING);
+};
+
+sampleplayer.FlingPlayer.prototype.onLoadedData_ = function () {
+    console.log('onLoadedData');
+}
 
 sampleplayer.FlingPlayer.prototype.onVolumeChange_ = function () {}
 
@@ -472,6 +495,8 @@ sampleplayer.FlingPlayer.prototype.onStalled_ = function (event) {
     } else if (this.state_ == sampleplayer.State.LOADING) {
         this.loading_time_out_ && clearTimeout(this.loading_time_out_);
         this.setState_(sampleplayer.State.BUFFERING);
+    } else {
+        console.log('onStalled_ ERORO state: ' + this.state_);
     }
 };
 
@@ -488,6 +513,8 @@ sampleplayer.FlingPlayer.prototype.onBuffering_ = function (event) {
     } else if (this.state_ == sampleplayer.State.LOADING) {
         this.loading_time_out_ && clearTimeout(this.loading_time_out_);
         this.setState_(sampleplayer.State.BUFFERING);
+    } else {
+        console.log('onBuffering_ ERORO state: ' + this.state_);
     }
 };
 

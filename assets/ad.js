@@ -45,7 +45,7 @@ var ADManager = function(){
     * @param {Object} MediaPlayer Instance
     */
     self.load = function(player){
-        var adMessageBus = player.receiverWrapper.createMessageBus("urn:flint:org.openflint.fling.media_ad");
+        var adMessageBus = player.receiverManager.createMessageBus("urn:flint:org.openflint.fling.media_ad");
         player.video.addEventListener("loadedmetadata", function (e) {
             self.adList = null;
             self.adMap = null;

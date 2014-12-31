@@ -30,10 +30,11 @@ var MediaPlayer = function (manager, videoId) {
     self.requestIdSeek = 0;
     self.requestIdGetStatus = 0;
 
-    self.receiverWrapper = manager;
-    var messageBus = self.receiverWrapper.createMessageBus("urn:flint:org.openflint.fling.media");
+    self.receiverManager = manager;
+    var messageBus = self.receiverManager.createMessageBus("urn:flint:org.openflint.fling.media");
     self.messageBus = messageBus;
     var video = (typeof(videoId) == "string") ? document.getElementById(videoId) : videoId;
+    //for ad 
     self.video = video;
     if (video == null) {
         throw Error("video element undefined!");
@@ -173,8 +174,10 @@ var MediaPlayer = function (manager, videoId) {
         // video.appendChild(source);
         video.src = url;
         video.load();
+        //for ad
         self.videoURL = url;
 
+        //for ad
         if (typeof(title) != "undefined" && !title) {
             self.title = title;
         }
